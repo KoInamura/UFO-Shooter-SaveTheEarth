@@ -1,0 +1,591 @@
+use Libraries.Game.Game
+use Libraries.Game.Graphics.Drawable
+use Libraries.Game.Graphics.Color
+use Libraries.Interface.Events.KeyboardEvent
+use Libraries.Game.InputMonitor
+use Libraries.Compute.Random
+use Libraries.Sound.Audio
+use Projectile
+use EnemyFire
+
+class Main is Game
+Drawable backGround
+Drawable ship
+Drawable explosion
+Drawable explosion2
+Drawable explosion3
+
+Drawable target1
+Drawable target2
+Drawable target3
+
+Projectile bullet0
+Projectile bullet1
+Projectile bullet2
+Projectile bullet3
+Projectile bullet4
+Projectile bullet5
+Projectile bullet6
+Projectile bullet7
+Projectile bullet8
+Projectile bullet9
+
+Projectile proHit
+
+EnemyFire eBullet1
+EnemyFire eBullet2
+EnemyFire eBullet3
+
+Color white
+Color red
+Color yellow
+Color orange
+Color color
+
+Audio bgm
+Audio enemyFire
+Audio meFire
+Audio exploding
+
+KeyboardEvent keys
+InputMonitor iMonitor
+
+Random ran
+
+integer speed = 200
+integer bulletSpeed = 400
+integer frameCounter = 0
+integer flashCounter = 0
+integer explosionCounter = 0
+integer endCounter = 0
+
+number currentX0 = 0
+number currentY0 = 0
+number currentX1 = 0
+number currentY1 = 0
+number currentX2 = 0
+number currentY2 = 0
+number currentX3 = 0
+number currentY3 = 0
+number currentX4 = 0
+number currentY4 = 0
+number currentX5 = 0
+number currentY5 = 0
+number currentX6 = 0
+number currentY6 = 0
+number currentX7 = 0
+number currentY7 = 0
+number currentX8 = 0
+number currentY8 = 0
+number currentX9 = 0
+number currentY9 = 0
+
+number explosionScale = 1
+
+integer bulletCount = 0
+integer hitPoint = 0
+integer damagePoint = 0
+
+boolean bulletReady = true
+boolean gameOver = false
+
+    action Main
+        StartGame()
+    end
+
+    action CreateGame
+        bgm:Load("Audio/UFO Appearing.wav")
+        bgm:EnableLooping()
+        bgm:Play()
+
+        enemyFire:Load("Audio/MeFiring.wav")
+        meFire:Load("Audio/MeFiring.wav")
+        exploding:Load("Audio/EndGameExplosion.wav")
+
+        white = white:White()
+        red = red:Red()
+        yellow = yellow:Yellow()
+        orange = orange:Orange()
+
+        backGround:Load("Graphics/Earth-Space.jpg")
+        Add(backGround)
+
+        ship:Load("Graphics/Spaceship3.png")
+        ship:SetPosition(400, 0)
+        Add(ship)
+        ship:SetName("MyShip")
+
+    //Bringing all bullet into existance outside of the game frame
+        bullet0:LoadFilledCircle(10, yellow)
+        bullet0:SetPosition(0, 2000)
+        Add(bullet0)
+
+        bullet1:LoadFilledCircle(10, yellow)
+        bullet1:SetPosition(100, 2000)
+        Add(bullet1)
+
+        bullet2:LoadFilledCircle(10, yellow)
+        bullet2:SetPosition(200, 2000)
+        Add(bullet2)
+
+        bullet3:LoadFilledCircle(10, yellow)
+        bullet3:SetPosition(300, 2000)
+        Add(bullet3)
+
+        bullet4:LoadFilledCircle(10, yellow)
+        bullet4:SetPosition(400, 2000)
+        Add(bullet4)
+
+        bullet5:LoadFilledCircle(10, yellow)
+        bullet5:SetPosition(500, 2000)
+        Add(bullet5)
+
+        bullet6:LoadFilledCircle(10, yellow)
+        bullet6:SetPosition(600, 2000)
+        Add(bullet6)
+
+        bullet7:LoadFilledCircle(10, yellow)
+        bullet7:SetPosition(700, 2000)
+        Add(bullet7)
+
+        bullet8:LoadFilledCircle(10, yellow)
+        bullet8:SetPosition(800, 2000)
+        Add(bullet8)
+
+        bullet9:LoadFilledCircle(10, yellow)
+        bullet9:SetPosition(900, 2000)
+        Add(bullet9)
+
+     //Setting all target
+        target1:Load("Graphics/UFO sourcer3.png")
+        target1:SetPosition(100, 500)
+        Add(target1)
+        target1:SetName("t1")
+
+        target2:Load("Graphics/UFO sourcer3.png")
+        target2:SetPosition(350, 500)
+        Add(target2)
+        target2:SetName("t2")
+
+        target3:Load("Graphics/UFO sourcer3.png")
+        target3:SetPosition(700, 500)
+        Add(target3)
+        target3:SetName("t3")
+
+    //Setting all eBullet
+        eBullet1:LoadFilledCircle(10, orange)
+        eBullet2:LoadFilledCircle(10, orange)
+        eBullet3:LoadFilledCircle(10, orange)
+
+        eBullet1:SetPosition(-10, 500)
+        eBullet2:SetPosition(-100, 500)
+        eBullet3:SetPosition(-200, 500)
+
+        Add(eBullet1)
+        Add(eBullet2)
+        Add(eBullet3)
+
+       
+        explosion:LoadFilledCircle(10, red)
+        explosion:SetPosition(0, 0)
+        Add(explosion)
+        explosion:Hide()
+
+        explosion2:LoadFilledCircle(10, yellow)
+        explosion2:SetPosition(0, 0)
+        Add(explosion2)
+        explosion2:Hide()
+
+        explosion3:LoadFilledCircle(10, orange)
+        explosion3:SetPosition(0, 0)
+        Add(explosion3)
+        explosion3:Hide()
+
+    //Making the program listen for the cliision of my bullet and the targets
+        AddCollisionListener(bullet0)
+        AddCollisionListener(bullet1)
+        AddCollisionListener(bullet2)
+        AddCollisionListener(bullet3)
+        AddCollisionListener(bullet4)
+        AddCollisionListener(bullet5)
+        AddCollisionListener(bullet6)
+        AddCollisionListener(bullet7)
+        AddCollisionListener(bullet8)
+        AddCollisionListener(bullet9)
+
+        AddCollisionListener(target1)
+        AddCollisionListener(target2)
+        AddCollisionListener(target3)
+
+        AddCollisionListener(eBullet1)
+        AddCollisionListener(eBullet2)
+        AddCollisionListener(eBullet3)
+
+        AddCollisionListener(ship)
+    end
+
+    action Update(number seconds)
+    if gameOver = false
+        //Setting up the recurring frame counter
+        frameCounter = frameCounter + 1
+        if frameCounter > 150
+            frameCounter = 0
+        end
+
+        flashCounter = flashCounter +1
+        if flashCounter > 30
+            flashCounter = 0
+        end
+
+        hitPoint = bullet0:hitCounter + bullet1:hitCounter + bullet2:hitCounter + bullet3:hitCounter + bullet4:hitCounter + bullet5:hitCounter + bullet6:hitCounter + bullet7:hitCounter + bullet8:hitCounter + bullet9:hitCounter
+        damagePoint = eBullet1:damageCounter + eBullet2:damageCounter + eBullet3:damageCounter
+
+        if hitPoint > 5 and hitPoint <= 10 and damagePoint < 15
+            HitEffect1(target1, target2, target3)
+        elseif hitPoint > 10 and hitPoint <= 15 and damagePoint < 15
+            HitEffect2(target1, target2, target3) 
+
+        elseif hitPoint >= 15 and damagePoint < 15
+            endCounter =endCounter +1
+            explosionCunter = explosionCounter +1
+            EnemyDefeated()
+            if endCounter = 200
+                bgm:Stop()
+                exploding:PlayUntilDone()
+                say "You defeated the Alien invasion. You won the game."
+                gameOver = true
+            end
+        end
+
+        if damagePoint > 5 and damagePoint <= 10 and hitPoint < 15
+            DamageEffect1(ship)
+        elseif damagePoint > 10 and damagePoint <= 15 and hitPoint < 15
+            DamageEffect2(ship)
+        elseif damagePoint >= 15 and hitPoint < 15
+            endCounter = endCounter +1
+            explosionCounter = explosionCounter +1
+            AbandonTheShip()
+            if endCounter = 200
+                bgm:Stop()
+                exploding:PlayUntilDone()
+                say "Aliens defeated our last defence. You lost the game"
+                gameOver = true
+            end
+        end
+
+        //Creating the mechanism to have the traget appear randomly
+        integer newXtarget1 = ran:RandomIntegerBetween(50, 700)
+        integer newYtarget1 = ran:RandomIntegerBetween(100, 500)
+        integer newXtarget2 = ran:RandomIntegerBetween(50, 700)
+        integer newYtarget2 = ran:RandomIntegerBetween(100, 500)
+        integer newXtarget3 = ran:RandomIntegerBetween(50, 700)
+        integer newYtarget3 = ran:RandomIntegerBetween(100, 500)
+
+        //Creating the mechanism that makes the aliens reappears when all three are gone.
+            if target1:GetX() < 0 and target2:GetX() < 0 and target3:GetX() < 0
+                target1:SetPosition(newXtarget1, newYtarget1)
+                target2:SetPosition(newXtarget2, newYtarget2)
+                target3:SetPosition(newXtarget3, newYtarget3)
+            end
+
+            //Calculating the centerX of the ship
+            number newCenter = ship:GetX()+ 25
+
+            //Setting up the mechanism for infinit supply of bullet for the ship
+            if bulletCount >=0 and bulletCount <= 9
+                bulletCount = bulletCount
+            elseif bulletCount > 9
+                bulletCount = 0
+            end
+
+        // Upadate formula for all bullet
+            currentX0 = bullet0:GetX()
+            currentY0 = bullet0:GetY()
+            bullet0:SetPosition(currentX0, currentY0 + bulletSpeed * seconds)
+
+            currentX1 = bullet1:GetX()
+            currentY1 = bullet1:GetY()
+            bullet1:SetPosition(currentX1, currentY1 + bulletSpeed * seconds)
+
+            currentX2 = bullet2:GetX()
+            currentY2 = bullet2:GetY()
+            bullet2:SetPosition(currentX2, currentY2 + bulletSpeed * seconds)
+
+            currentX3 = bullet3:GetX()
+            currentY3 = bullet3:GetY()
+            bullet3:SetPosition(currentX3, currentY3 + bulletSpeed * seconds)
+
+            currentX4 = bullet4:GetX()
+            currentY4 = bullet4:GetY()
+            bullet4:SetPosition(currentX4, currentY4 + bulletSpeed * seconds)
+
+            currentX5 = bullet5:GetX()
+            currentY5 = bullet5:GetY()
+            bullet5:SetPosition(currentX5, currentY5 + bulletSpeed * seconds)
+
+            currentX6 = bullet6:GetX()
+            currentY6 = bullet6:GetY()
+            bullet6:SetPosition(currentX6, currentY6 + bulletSpeed * seconds)
+
+            currentX7 = bullet7:GetX()
+            currentY7 = bullet7:GetY()
+            bullet7:SetPosition(currentX7, currentY7 + bulletSpeed * seconds)
+
+            currentX8 = bullet8:GetX()
+            currentY8 = bullet8:GetY()
+            bullet8:SetPosition(currentX8, currentY8 + bulletSpeed * seconds)
+
+            currentX9 = bullet9:GetX()
+            currentY9 = bullet9:GetY()
+            bullet9:SetPosition(currentX9, currentY9 + bulletSpeed * seconds)
+
+        //Creating the update formula for all enemy bullet(eBullets)
+            number currentEB1X = eBullet1:GetX()
+            number currentEB1Y = eBullet1:GetY()
+            eBullet1:SetPosition(currentEB1X, currentEB1Y -bulletSpeed * seconds)
+
+            number currentEB2X = eBullet2:GetX()
+            number currentEB2Y = eBullet2:GetY()
+            eBullet2:SetPosition(currentEB2X, currentEB2Y - bulletSpeed * seconds)
+
+            number currentEB3X = eBullet3:GetX()
+            number currentEB3Y = eBullet3:GetY()
+            eBullet3:SetPosition(currentEB3X, currentEB3Y - bulletSpeed * seconds)
+
+        //Creating the mechanism for the enemy to fire the bullet periodically
+
+            if frameCounter = 1 
+                eBullet1:SetPosition(target1:GetX()+15, target1:GetY())
+                eBullet1:Show()
+                enemyFire:Play()
+            elseif frameCounter = 50
+                eBullet2:SetPosition(target2:GetX()+15, target2:GetY())
+                eBullet2:Show()
+                enemyFire:Play()
+            elseif frameCounter = 100
+                eBullet3:SetPosition(target3:GetX()+15, target3:GetY())
+                eBullet3:Show()
+                enemyFire:Play()
+            end
+
+        //Making the ship move, and preventing clipping
+            if iMonitor:IsKeyPressed(keys:RIGHT)
+                number newX = ship:GetX()+speed*seconds
+                    if newX > 700
+                    newX = 700
+                    end
+                ship:SetPosition(newX, 0)
+            elseif iMonitor:IsKeyPressed(keys:LEFT)
+                number newX = ship:GetX()-speed*seconds
+                    if newX < 0
+                    newX = 0
+                    end
+                ship:SetPosition(newX, 0)
+            end
+
+        /*
+        Creating the condition that only one SPACE key input is registered on one 
+        press of SPACE key in the Input Polling Method. Unless you conbine the two 
+        boolean variable to make the multi criteria conditional, the SPACE key will be 
+        registered several time on even the slightes touch of the key - as the game
+        frame refleshes very quickly. 
+        */
+
+            if iMonitor:IsKeyPressed(keys:SPACE) = true and bulletReady = true
+                meFire:Play()
+        //Making it possible for multiple my-bullet to fly (up to 10 at a time in the give screen)
+                if bulletCount = 0
+                    if bullet0:IsShowing()
+                        bullet0:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    elseif not bullet0:IsShowing()
+                        bullet0:Show()
+                        bullet0:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    end
+                elseif bulletCount = 1
+                    if bullet1:IsShowing()
+                        bullet1:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    elseif not bullet1:IsShowing()
+                        bullet1:Show()
+                        bullet1:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    end
+                elseif bulletCount = 2
+                    if bullet2:IsShowing()
+                        bullet2:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    elseif not bullet2:IsShowing()
+                        bullet2:Show()
+                        bullet2:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    end
+                elseif bulletCount = 3
+                    if bullet3:IsShowing()
+                        bullet3:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    elseif not bullet3:IsShowing()
+                        bullet3:Show()
+                        bullet3:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    end
+                elseif bulletCount = 4
+                    if bullet4:IsShowing()
+                        bullet4:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    elseif not bullet4:IsShowing()
+                        bullet4:Show()
+                        bullet4:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    end
+                elseif bulletCount = 5
+                    if bullet5:IsShowing()
+                        bullet5:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    elseif not bullet5:IsShowing()
+                        bullet5:Show()
+                        bullet5:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    end
+                elseif bulletCount = 6
+                        if bullet6:IsShowing()
+                        bullet6:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    elseif not bullet6:IsShowing()
+                        bullet6:Show()
+                        bullet6:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    end
+                elseif bulletCount = 7
+                    if bullet7:IsShowing()
+                        bullet7:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    elseif not bullet7:IsShowing()
+                        bullet7:Show()
+                        bullet7:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    end
+                elseif bulletCount = 8
+                    if bullet8:IsShowing()
+                        bullet8:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    elseif not bullet8:IsShowing()
+                        bullet8:Show()
+                        bullet8:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    end
+                elseif bulletCount = 9
+                    if bullet9:IsShowing()
+                        bullet9:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    elseif not bullet9:IsShowing()
+                        bullet9:Show()
+                        bullet9:SetPosition(newCenter, 100)
+                        bulletCount = bulletCount + 1
+                        bulletReady = false
+                    end
+                end
+            elseif iMonitor:IsKeyPressed(keys:SPACE) = false and bulletReady = false
+                bulletReady = true
+            end
+        elseif gameOver = true
+            Exit()
+            
+        end
+    end
+
+    action HitEffect1(Drawable a1, Drawable a2, Drawable a3)
+        if flashCounter = 1
+            a1:SetColor(color:Yellow())
+            a2:SetColor(color:Yellow())
+            a3:SetColor(color:Yellow())
+        elseif flashCounter = 15
+            a1:SetColor(color:White())
+            a2:SetColor(color:White())
+            a3:SetColor(color:White())
+        end
+    end
+
+    action HitEffect2(Drawable a1, Drawable a2, Drawable a3)
+        if flashCounter = 1
+            a1:SetColor(color:Red())
+            a2:SetColor(color:Red())
+            a3:SetColor(color:Red())
+        elseif flashCounter = 15
+            a1:SetColor(color:White())
+            a2:SetColor(color:White())
+            a3:SetColor(color:White())
+        end
+    end
+   
+    action DamageEffect1(Drawable ship)
+        if flashCounter  = 1
+            ship:SetColor(color:Green())
+        elseif flashCounter = 15
+            ship:SetColor(color:White())
+        end
+    end
+
+    action DamageEffect2(Drawable ship)
+        if flashCounter  = 1
+            ship:SetColor(color:Red())
+        elseif flashCounter = 15
+            ship:SetColor(color:White())
+        end
+    end
+
+    action AbandonTheShip
+                
+                explosion:SetPosition(ship:GetX() +30, ship:GetY() +50)
+                explosion:Show()
+                explosion2:SetPosition(ship:GetX() +10, ship:GetY() +20)
+                explosion2:Show()
+                explosion3:SetPosition(ship:GetX() +50, ship:GetY() +20)
+                explosion3:Show()
+                explosionScale = explosionScale + 0.1
+                if explosionScale >= 4.0
+                explosionScale = 1
+                end
+                explosion:SetScaleFromCenter(explosionScale)
+                explosion2:SetScaleFromCenter(explosionScale)
+                explosion3:SetScaleFromCenter(explosionScale)
+                
+    end
+
+    action EnemyDefeated
+               
+                explosion:SetPosition(target1:GetX() +20, target1:GetY() +20)
+                explosion:Show()
+                explosion2:SetPosition(target2:GetX() +20, target2:GetY() +20)
+                explosion2:Show()
+                explosion3:SetPosition(target3:GetX() +20, target3:GetY() +20)
+                explosion3:Show()
+                explosionScale = explosionScale + 0.1
+                if explosionScale >= 4.0
+                explosionScale = 1
+                end
+                explosion:SetScaleFromCenter(explosionScale)
+                explosion2:SetScaleFromCenter(explosionScale)
+                explosion3:SetScaleFromCenter(explosionScale)  
+    end
+end

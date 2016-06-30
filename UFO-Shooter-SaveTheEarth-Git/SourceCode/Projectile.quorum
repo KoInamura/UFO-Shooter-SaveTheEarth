@@ -1,0 +1,45 @@
+use Libraries.Game.Graphics.Drawable
+use Libraries.Game.Graphics.Color
+use Libraries.Sound.Audio
+
+class Projectile is Drawable
+    Audio hit
+    public integer hitCounter = 0
+
+    on create
+        hit:Load("Audio/AlienFire.wav")
+    end
+
+    action BeginCollision(Item item)
+        
+        if item:GetName() = "t1"
+            hit:Play()
+            me:Hide()
+            hitCounter = hitCounter +1
+            item:Hide()
+            item:SetPosition(-200, 0)
+            item:Show()
+        elseif item:GetName() = "t2"
+            hit:Play()
+            me:Hide()
+            hitCounter = hitCounter +1
+            item:Hide()
+            item:SetPosition(-400, 0)
+            item:Show()
+        elseif item:GetName() = "t3"
+            hit:Play()
+            me:Hide()
+            hitCounbter = hitCounter +1
+            item:Hide()
+            item:SetPosition(-600, 0)
+            item:Show()
+        else
+        end
+    end
+
+    action HitCountGetter returns integer
+        integer hit = hitCounter
+        return hit
+     end
+    
+end

@@ -1,0 +1,27 @@
+use Libraries.Game.Graphics.Drawable
+use Libraries.Game.Graphics.Color
+use Libraries.Sound.Audio
+
+class EnemyFire is Drawable
+
+Color color
+Audio damage
+
+on create
+    damage:Load("Audio/Hit.wav")
+end
+
+public integer damageCounter = 0
+
+    action BeginCollision(Item item)
+        if item:GetName() = "MyShip"
+            damage:Play()
+            me:Hide()
+            damageCounter = damageCounter +1   
+        else
+            //Do nothing
+        end
+    end
+
+
+end
